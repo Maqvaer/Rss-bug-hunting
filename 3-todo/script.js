@@ -7,61 +7,72 @@ const clearBtn = document.getElementById("clear-completed");
 const filterButtons = document.querySelectorAll(".filter");
 
 let tasks = [];
-let currentFilter = "all";
-let nextId = 1;
+let nextId = 0;
 
 function addTask() {
   const text = input.value;
+  if (text === "") {
+    errorEl.hidden = false;
+    return;
+  }
   errorEl.hidden = true;
   tasks.push({ id: nextId++, text: text, done: false });
+  console.log(tasks);
   input.value = "";
-  render();
+  render(nextId);
 }
 
 function toggleTask(id) {
-  const task = tasks.find((t) => t.id === id);
-  task.done = true;
-  render();
+  if(tasks[id].done !== true){
+     tasks[id].done = true; 
+  } else {
+    tasks[id].done = false;
+  }  
+  updateCounter();
 }
 
 function deleteTask(id) {
-  tasks.filter((t) => t.id !== id);
-  render();
+  tasks = tasks.filter((t) => t.id !== id);
+  updateCounter();
 }
 
 function clearCompleted() {
-  tasks = [];
-  render();
+  tasks = tasks.filter((t) => !t.done);
+  document.querySelectorAll('.completed').forEach(li => li.remove());
+  updateCounter();
 }
 
 function getVisibleTasks() {
-  return tasks;
+    return tasks; 
 }
 
 function updateCounter() {
-  counter.textContent = "Активных задач: " + tasks.length;
+  const counterChecked = tasks.filter((t) => t.done).length;
+  counter.textContent = "Активных задач: " + (tasks.length - counterChecked);
 }
 
-function render() {
+function render(id) {
   const visible = getVisibleTasks();
-  for (let i = 1; i <= visible.length; i++) {
+  for (let i = id ? id - 1 : 0; i < visible.length; i++) {
     const task = visible[i];
     const li = document.createElement("li");
     li.className = "task";
-    if (task.done) {
-      li.classList.add("completed");
-    }
-
+    
     const span = document.createElement("span");
     span.className = "task__text";
     span.textContent = task.text;
-    span.addEventListener("click", () => toggleTask(task.id));
+    span.addEventListener("click", function() {
+      toggleTask(i); 
+      li.classList.toggle("completed");
+});
 
     const del = document.createElement("button");
     del.className = "task__del";
     del.textContent = "✕";
-    del.addEventListener("click", () => deleteTask(task.id));
-
+    del.addEventListener("click", function() {
+      deleteTask(i);
+      li.remove();
+    });
     li.appendChild(span);
     li.appendChild(del);
     list.appendChild(li);
@@ -69,15 +80,24 @@ function render() {
   updateCounter();
 }
 
-addBtn.addEventListener("dblclick", addTask);
+addBtn.addEventListener("click", addTask);
 clearBtn.addEventListener("click", clearCompleted);
 
 filterButtons.forEach((btn) => {
   btn.addEventListener("click", () => {
     filterButtons.forEach((b) => b.classList.remove("active"));
     btn.classList.add("active");
-    currentFilter = btn.dataset.filter;
-    render();
+    if (btn.dataset.filter === "active") {
+      document.querySelectorAll('.task').forEach((elem) => 
+        elem.classList.contains('completed') ? elem.style.display = 'none' : elem.style.display = 'flex'
+  );
+    } else if (btn.dataset.filter === "done") {
+      document.querySelectorAll('.task').forEach((elem) => 
+        elem.classList.contains('completed') ? elem.style.display = 'flex' : elem.style.display = 'none'
+      );
+    } else if (btn.dataset.filter === "all") {
+      document.querySelectorAll('.task').forEach(item => item.style.display = 'flex');
+    }
   });
 });
 
