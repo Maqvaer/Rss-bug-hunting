@@ -15,45 +15,67 @@ const sortSelect = document.getElementById("sort");
 const resetBtn = document.getElementById("reset");
 const grid = document.getElementById("grid");
 const countEl = document.getElementById("count");
-
-function getFiltered() {
-  let result = products;
-  const search = searchInput.value;
-  const category = categorySelect.value;
-  const sort = sortSelect.value;
-
-  if (search) {
-    result = result.filter((p) => p.name === search);
-  }
-
-  if (category !== "all") {
-    result = products.filter((p) => p.category !== category);
-  }
-
-  if (sort === "asc") {
-    result.sort((a, b) => b.price - a.price);
-  } else if (sort === "desc") {
-    result.sort((a, b) => a.price - b.price);
-  }
-
-  return result;
+let result = [];
+result = products;
+function getFiltered(filter,event) {
+  const searchStr = searchInput.value;
+  switch (filter) {
+    case "search":
+      if (search) {
+        result = result.filter((p) => p.name.toLowerCase().includes(searchStr.toLowerCase()));
+      }
+      console.log(result);
+      return render(result);
+         case "category":
+      if (event.target.value !== "all") {
+        result = result.filter((p) => p.category === event.target.value);
+      }
+      console.log(result);
+      return render(result);
+          case "sort":
+      if (event.target.value === "asc") {
+        result.sort((a, b) => a.price - b.price);
+      } else if (event.target.value === "desc") {
+        result.sort((a, b) => b.price - a.price);
+      } else if (event.target.value === "default") {
+        result.sort((a, b) => a.id - b.id);
+      }
+      return render(result);
+      default:
+        return render(products);
+  } 
 }
 
-function render() {
-  const items = getFiltered();
+
+
+function render(items) {
+  grid.innerHTML = "";
   items.forEach((p) => {
     const card = document.createElement("div");
     card.className = "card";
     card.innerHTML = `<h3>${p.name}</h3><p class="cat">${p.category}</p><p class="price">$${p.price}</p>`;
     grid.appendChild(card);
   });
-  countEl.textContent = products.length;
+  countEl.textContent = items.length;
 }
 
-searchInput.addEventListener("input", render);
-categorySelect.addEventListener("change", render);
-sortSelect.addEventListener("change", render);
+
+searchInput.addEventListener("input", (event) => getFiltered("search",event));
+categorySelect.addEventListener("change", (event) => getFiltered("category",event));
+sortSelect.addEventListener("change", (event) => getFiltered("sort",event));
+
 
 resetBtn.addEventListener("click", () => {
   searchInput.value = "";
+  categorySelect.value = "all";
+  sortSelect.value = "default";
+  getFiltered("search", { target: searchInput });
+  getFiltered("category", { target: categorySelect });
+  getFiltered("sort", { target: sortSelect });
+  render(products);
+  result = products;
 });
+
+
+render(products);
+
