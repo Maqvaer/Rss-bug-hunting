@@ -96,6 +96,15 @@ body {
   border-bottom: 1px solid #e2e8f0;
 }
 
+.completed{
+  text-decoration: line-through;
+}
+
+[data-filter="active"] .completed{
+  display: none;
+}
+
+
 .task__text {
   flex: 1;
   cursor: pointer;
@@ -131,3 +140,5 @@ body {
   background: #e2e8f0;
   color: #334155;
 }
+
+
